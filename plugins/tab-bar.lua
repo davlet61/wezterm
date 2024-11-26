@@ -59,9 +59,9 @@ wezterm.on("format-tab-title", function(tab, tabs, _, conf, _, max_width)
 	local elements = {}
 
 	if tab.tab_index == 0 then
-		-- First tab
+		-- First tab: Ensure proper left alignment
 		table.insert(elements, { Background = { Color = bg_color } })
-		table.insert(elements, { Foreground = { Color = background } })
+		table.insert(elements, { Foreground = { Color = bg_color } })
 		table.insert(elements, { Text = div.left })
 	end
 
@@ -78,7 +78,7 @@ wezterm.on("format-tab-title", function(tab, tabs, _, conf, _, max_width)
 		table.insert(elements, { Background = { Color = next_bg_color } })
 		table.insert(elements, { Foreground = { Color = bg_color } })
 	else
-		-- Last tab
+		-- Last tab: Ensure proper right alignment
 		table.insert(elements, { Background = { Color = background } })
 		table.insert(elements, { Foreground = { Color = bg_color } })
 	end
