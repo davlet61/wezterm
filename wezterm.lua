@@ -5,12 +5,15 @@ local config = {}
 if wezterm.config_builder then
 	config = wezterm.config_builder()
 end
--- function scheme_for_appearance(appearance) --   if appearance:find "Dark" then --     return "Catppuccin Mocha" --   else --     return "Catppuccin Light" --   end -- end -- -- config.color_scheme = scheme_for_appearance(wezterm.gui.get_appearance())
+
 config.color_scheme = "OneDark (base16)"
--- config.colors = { --   foreground = "#abb2bf", --   background = "#1e222a", --   cursor_bg = "#FFFFFF", --   cursor_fg = "#000000", --   cursor_border = "#FFFFFF", --      tab_bar = { --         background = "#171720", --         inactive_tab = { --             bg_color = "#2B2B41", --             fg_color = "#808080", --         }, --         new_tab = { --             bg_color = "#171720", --             fg_color = "#808080", --         }, --     }, -- }
-config.font = wezterm.font("JetBrains Mono", { weight = "Bold" }) -- config.font = wezterm.font('MesloLGS NF')
--- config.font_size = 16.0
-config.window_frame = { font = wezterm.font({ family = "Noto Sans", weight = "Regular" }) } -- config.hyperlink_rules = wezterm.default_hyperlink_rules() --                 -- match the URL with a PORT -- table.insert(config.hyperlink_rules,    { --     regex = "\\b\\w+://(?:[\\w.-]+):\\d+\\S*\\b", --     format = "$0", -- })
+config.font = wezterm.font("JetBrains Mono", { weight = "Bold" })
+-- config.font = wezterm.font('MesloLGS NF')
+config.window_frame = { font = wezterm.font({ family = "Noto Sans", weight = "Regular" }) }
+-- config.hyperlink_rules = wezterm.default_hyperlink_rules()
+-- match the URL with a PORT
+-- table.insert(config.hyperlink_rules,    { --     regex = "\\b\\w+://(?:[\\w.-]+):\\d+\\S*\\b", --     format = "$0", -- })
+
 config.use_dead_keys = false
 config.scrollback_lines = 5000
 config.disable_default_key_bindings = true -- config.enable_kitty_keyboard = true -- config.enable_csi_u_key_encoding = false
@@ -89,7 +92,6 @@ config.keys = {
 		action = wezterm.action.PaneSelect({ mode = "SwapWithActive" }),
 	},
 }
--- config.key_tables = { --     copy_mode = { --       { key = 'w', mods = 'NONE', action = act.CopyMode 'MoveForwardWord' }, --     }, --   }
 
 config.window_decorations = "RESIZE"
 config.hide_tab_bar_if_only_one_tab = true
@@ -102,6 +104,18 @@ wezterm.on("gui-startup", function(cmd)
 	local tab, pane, window = mux.spawn_window(cmd or {})
 	window:gui_window():maximize()
 end)
+
+-- Import tab-bar module
+local tab_bar = require("plugins.tab-bar")
+tab_bar.apply_to_config(config, {
+	position = "bottom",
+	max_width = 40,
+	clock = {
+		enabled = false,
+		format = "",
+	},
+	dividers = "slanted_right",
+})
 
 config.inactive_pane_hsb = {
 	saturation = 0.1,
