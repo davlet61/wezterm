@@ -1,7 +1,6 @@
 local wezterm = require("wezterm")
 local tab_bar = {}
 
--- Unicode characters for different divider styles
 local dividers = {
 	slant_right = { left = "\u{e0be}", right = "\u{e0bc}" },
 	slant_left = { left = "\u{e0ba}", right = "\u{e0b8}" },
@@ -9,7 +8,6 @@ local dividers = {
 	rounded = { left = "\u{e0b6}", right = "\u{e0b4}" },
 }
 
--- Rainbow colors for tabs
 local rainbow_colors = {
 	"#E06C75", -- Red
 	"#E5C07B", -- Yellow
@@ -19,7 +17,6 @@ local rainbow_colors = {
 	"#C678DD", -- Purple
 }
 
--- Default settings
 local config = {
 	position = "bottom",
 	max_width = 32,
@@ -27,7 +24,6 @@ local config = {
 	clock = { enabled = true, format = "%H:%M:%S" },
 }
 
--- Function to merge configurations
 local function tableMerge(t1, t2)
 	for k, v in pairs(t2) do
 		if type(v) == "table" then
@@ -43,17 +39,15 @@ local function tableMerge(t1, t2)
 	return t1
 end
 
--- Format the tab titles with rainbow colors
 wezterm.on("format-tab-title", function(tab, tabs, _, conf, _, max_width)
 	local active = tab.is_active
+	local background = "#1b1b1b"
+	local div = dividers[config.dividers] or dividers.slant_right
 
 	-- Get the current color based on tab index
 	local color_index = (tab.tab_index % #rainbow_colors) + 1
 	local bg_color = active and rainbow_colors[color_index] or "#313244"
 	local fg_color = active and "#ECEFF4" or "#666666"
-
-	-- Get the divider style
-	local div = dividers[config.dividers] or dividers.slant_right
 
 	-- Get the tab title
 	local index = (tab.tab_index + 1)
@@ -62,14 +56,37 @@ wezterm.on("format-tab-title", function(tab, tabs, _, conf, _, max_width)
 		title = wezterm.truncate_right(title, max_width - 2) .. "…"
 	end
 
-	return {
-		{ Background = { Color = bg_color } },
-		{ Foreground = { Color = fg_color } },
-		{ Text = " " .. title .. " " .. div.right },
-	}
+	local elements = {}
+
+	if tab.tab_index == 0 then
+		-- First tab
+		table.insert(elements, { Background = { Color = bg_color } })
+		table.insert(elements, { Foreground = { Color = background } })
+		table.insert(elements, { Text = div.left })
+	end
+
+	-- Tab content
+	table.insert(elements, { Background = { Color = bg_color } })
+	table.insert(elements, { Foreground = { Color = fg_color } })
+	table.insert(elements, { Text = " " .. title .. " " })
+
+	-- Right divider
+	local next_tab = tabs[tab.tab_index + 2]
+	if next_tab then
+		local next_color_index = ((tab.tab_index + 1) % #rainbow_colors) + 1
+		local next_bg_color = next_tab.is_active and rainbow_colors[next_color_index] or "#313244"
+		table.insert(elements, { Background = { Color = next_bg_color } })
+		table.insert(elements, { Foreground = { Color = bg_color } })
+	else
+		-- Last tab
+		table.insert(elements, { Background = { Color = background } })
+		table.insert(elements, { Foreground = { Color = bg_color } })
+	end
+	table.insert(elements, { Text = div.right })
+
+	return elements
 end)
 
--- Update the status bar with a clock
 wezterm.on("update-status", function(window, _)
 	if config.clock and config.clock.enabled then
 		local time = wezterm.time.now():format(config.clock.format)
@@ -81,20 +98,17 @@ wezterm.on("update-status", function(window, _)
 	end
 end)
 
--- Apply tab bar configuration
 function tab_bar.apply_to_config(c, opts)
 	if opts then
 		config = tableMerge(config, opts)
 	end
 
-	-- Apply the configuration
 	c.use_fancy_tab_bar = false
 	c.tab_bar_at_bottom = config.position == "bottom"
 	c.tab_max_width = config.max_width
 	c.enable_tab_bar = true
 	c.hide_tab_bar_if_only_one_tab = true
 
-	-- Ensure proper colors
 	c.colors = c.colors or {}
 	c.colors.tab_bar = {
 		background = "#1b1b1b",
