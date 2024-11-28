@@ -88,28 +88,34 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	local background = "#1b1b1b"
 	local div = dividers[config.dividers] or dividers.slant_right
 	local pane = tab.active_pane
-	local cwd = wezterm.to_string(pane.current_working_dir)
-	local url = wezterm.url.parse(cwd)
+	local cwd = pane.current_working_dir and wezterm.to_string(pane.current_working_dir) or nil
+	local url = nil
 
-	-- wezterm.log_info("node specific => ", simplify_path(url.path) == pane.title, cwd, pane.title)
-
-	-- Get the current color based on tab index
-	local color_index = (tab.tab_index % #rainbow_colors) + 1
-	local bg_color = active and rainbow_colors[color_index] or "#313244"
-	-- local fg_color = active and "#ECEFF4" or "#666666"
-	local fg_color = active and "#313444" or "#666666"
-	-- Get the tab title
-	-- local index = (tab.tab_index + 1)
-	-- local title = string.format("%d:%s", index, tab.active_pane.title)
-
-	local display_title = get_icon_or_title(pane.title)
-	-- local is_icon = display_title ~= pane.title
-
-	local title = string.format("%s  %s", display_title, simplify_path(url.path))
-	if string.find(cwd, pane.title:gsub("%.%.+", ""), 1, true) or simplify_path(url.path) == pane.title then
-		title = string.format("%s", pane.title)
+	-- Parse the working directory URL if valid
+	if cwd and cwd:match("^file://") then
+		url = wezterm.url.parse(cwd)
+	else
+		wezterm.log_info("Invalid or missing working directory: ", cwd)
 	end
 
+	-- Determine the colors
+	local color_index = (tab.tab_index % #rainbow_colors) + 1
+	local bg_color = active and rainbow_colors[color_index] or "#313244"
+	local fg_color = active and "#313444" or "#666666"
+
+	-- Get the icon or title
+	local display_title = get_icon_or_title(pane.title)
+
+	-- Simplify path and build the title
+	local simplified_path = url and simplify_path(url.path or "") or ""
+	local title = string.format("%s  %s", display_title, simplified_path)
+
+	-- Check if the title overlaps with the path
+	if string.find(cwd or "", pane.title:gsub("%.%.+", ""), 1, true) or simplified_path == pane.title then
+		title = pane.title -- Show only the pane title
+	end
+
+	-- Truncate the title if it exceeds max width
 	if #title > max_width then
 		title = wezterm.truncate_right(title, max_width - 2) .. "…"
 	end
