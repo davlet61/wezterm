@@ -62,8 +62,9 @@ wezterm.on("format-tab-title", function(tab, tabs, _, conf, _, max_width)
 	local fg_color = active and "#ECEFF4" or "#666666"
 
 	-- Get the tab title
-	local index = (tab.tab_index + 1)
-	local title = string.format("%d:%s", index, tab.active_pane.title)
+	-- local index = (tab.tab_index + 1)
+	-- local title = string.format("%d:%s", index, tab.active_pane.title)
+	local title = string.format("%s", tab.active_pane.title)
 	if #title > max_width then
 		title = wezterm.truncate_right(title, max_width - 2) .. "…"
 	end
