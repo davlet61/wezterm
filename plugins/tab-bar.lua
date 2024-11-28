@@ -59,7 +59,18 @@ local function get_icon_or_title(title)
 	-- List of prefixes to try
 	local prefixes = { "dev", "md", "fa" } -- Add more prefixes as needed
 
-	-- Iterate through prefixes and attempt to find a matching icon
+	-- Treat these titles as equivalent to "node"
+	local node_specific_titles = { "node", "nodejs", "bun", "npm", "yarn", "pnpm" }
+
+	-- Normalize titles to "node" for node-specific terms
+	for _, node_title in ipairs(node_specific_titles) do
+		if title == node_title then
+			title = "nodejs_small"
+			break
+		end
+	end
+
+	-- Try to find an icon with the normalized title
 	for _, prefix in ipairs(prefixes) do
 		local key = prefix .. "_" .. title
 		local icon = wezterm.nerdfonts[key]
@@ -80,7 +91,7 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	local cwd = wezterm.to_string(pane.current_working_dir)
 	local url = wezterm.url.parse(cwd)
 
-	-- wezterm.log_info("Includes => ", string.find(cwd, pane.title:gsub("%.%.+", ""), 1, true), pane.title)
+	-- wezterm.log_info("node specific => ", simplify_path(url.path) == pane.title, cwd, pane.title)
 
 	-- Get the current color based on tab index
 	local color_index = (tab.tab_index % #rainbow_colors) + 1
@@ -91,8 +102,10 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	-- local title = string.format("%d:%s", index, tab.active_pane.title)
 
 	local display_title = get_icon_or_title(pane.title)
-	local title = string.format("%s:%s", display_title, simplify_path(url.path))
-	if string.find(cwd, pane.title:gsub("%.%.+", ""), 1, true) then
+	-- local is_icon = display_title ~= pane.title
+
+	local title = string.format("%s  %s", display_title, simplify_path(url.path))
+	if string.find(cwd, pane.title:gsub("%.%.+", ""), 1, true) or simplify_path(url.path) == pane.title then
 		title = string.format("%s", pane.title)
 	end
 
