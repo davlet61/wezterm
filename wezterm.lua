@@ -93,7 +93,7 @@ config.keys = {
 	},
 }
 
-config.window_decorations = "RESIZE"
+config.show_new_tab_button_in_tab_bar = false
 config.hide_tab_bar_if_only_one_tab = true
 config.enable_tab_bar = true
 config.tab_bar_at_bottom = true
@@ -114,7 +114,7 @@ tab_bar.apply_to_config(config, {
 		enabled = false,
 		format = "",
 	},
-	dividers = "slanted_right",
+	dividers = "slant_right",
 })
 
 config.inactive_pane_hsb = {
