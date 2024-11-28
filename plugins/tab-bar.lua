@@ -2,10 +2,22 @@ local wezterm = require("wezterm")
 local tab_bar = {}
 
 local dividers = {
-	slant_right = { left = "\u{e0be}", right = "\u{e0bc}" },
-	slant_left = { left = "\u{e0ba}", right = "\u{e0b8}" },
-	arrows = { left = "\u{e0b2}", right = "\u{e0b0}" },
-	rounded = { left = "\u{e0b6}", right = "\u{e0b4}" },
+	slant_right = {
+		left = wezterm.nerdfonts.ple_lower_right_triangle,
+		right = wezterm.nerdfonts.ple_upper_left_triangle,
+	},
+	slant_left = {
+		left = wezterm.nerdfonts.ple_upper_right_triangle,
+		right = wezterm.nerdfonts.ple_lower_left_triangle,
+	},
+	arrows = {
+		left = wezterm.nerdfonts.pl_right_hard_divider,
+		right = wezterm.nerdfonts.pl_left_hard_divider,
+	},
+	rounded = {
+		left = wezterm.nerdfonts.ple_left_half_circle_thick,
+		right = wezterm.nerdfonts.ple_right_half_circle_thick,
+	},
 }
 
 local rainbow_colors = {
