@@ -96,7 +96,8 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	-- Get the current color based on tab index
 	local color_index = (tab.tab_index % #rainbow_colors) + 1
 	local bg_color = active and rainbow_colors[color_index] or "#313244"
-	local fg_color = active and "#ECEFF4" or "#666666"
+	-- local fg_color = active and "#ECEFF4" or "#666666"
+	local fg_color = active and "#313444" or "#666666"
 	-- Get the tab title
 	-- local index = (tab.tab_index + 1)
 	-- local title = string.format("%d:%s", index, tab.active_pane.title)
