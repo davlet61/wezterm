@@ -112,7 +112,7 @@ tab_bar.apply_to_config(config, {
 	max_width = 40,
 	clock = {
 		enabled = false,
-		format = "",
+		-- format = "%H:%M:%S",
 	},
 	dividers = "slant_right",
 })

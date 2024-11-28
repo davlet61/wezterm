@@ -51,20 +51,51 @@ local function tableMerge(t1, t2)
 	return t1
 end
 
-wezterm.on("format-tab-title", function(tab, tabs, _, conf, _, max_width)
+local function simplify_path(path)
+	return path:gsub("^" .. wezterm.home_dir, "~")
+end
+
+local function get_icon_or_title(title)
+	-- List of prefixes to try
+	local prefixes = { "dev", "md", "fa" } -- Add more prefixes as needed
+
+	-- Iterate through prefixes and attempt to find a matching icon
+	for _, prefix in ipairs(prefixes) do
+		local key = prefix .. "_" .. title
+		local icon = wezterm.nerdfonts[key]
+		if icon then
+			return icon -- Return the icon if found
+		end
+	end
+
+	-- If no icon is found, return the original title
+	return title
+end
+
+wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	local active = tab.is_active
 	local background = "#1b1b1b"
 	local div = dividers[config.dividers] or dividers.slant_right
+	local pane = tab.active_pane
+	local cwd = wezterm.to_string(pane.current_working_dir)
+	local url = wezterm.url.parse(cwd)
+
+	-- wezterm.log_info("Includes => ", string.find(cwd, pane.title:gsub("%.%.+", ""), 1, true), pane.title)
 
 	-- Get the current color based on tab index
 	local color_index = (tab.tab_index % #rainbow_colors) + 1
 	local bg_color = active and rainbow_colors[color_index] or "#313244"
 	local fg_color = active and "#ECEFF4" or "#666666"
-
 	-- Get the tab title
 	-- local index = (tab.tab_index + 1)
 	-- local title = string.format("%d:%s", index, tab.active_pane.title)
-	local title = string.format("%s", tab.active_pane.title)
+
+	local display_title = get_icon_or_title(pane.title)
+	local title = string.format("%s:%s", display_title, simplify_path(url.path))
+	if string.find(cwd, pane.title:gsub("%.%.+", ""), 1, true) then
+		title = string.format("%s", pane.title)
+	end
+
 	if #title > max_width then
 		title = wezterm.truncate_right(title, max_width - 2) .. "…"
 	end
