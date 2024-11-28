@@ -58,13 +58,6 @@ wezterm.on("format-tab-title", function(tab, tabs, _, conf, _, max_width)
 
 	local elements = {}
 
-	if tab.tab_index == 0 then
-		-- First tab: Ensure proper left alignment
-		table.insert(elements, { Background = { Color = bg_color } })
-		table.insert(elements, { Foreground = { Color = bg_color } })
-		table.insert(elements, { Text = div.left })
-	end
-
 	-- Tab content
 	table.insert(elements, { Background = { Color = bg_color } })
 	table.insert(elements, { Foreground = { Color = fg_color } })
@@ -112,6 +105,9 @@ function tab_bar.apply_to_config(c, opts)
 	c.colors = c.colors or {}
 	c.colors.tab_bar = {
 		background = "#1b1b1b",
+		new_tab = { bg_color = "#313244", fg_color = "#ECEFF4" },
+		inactive_tab = { bg_color = "#313244", fg_color = "#666666" },
+		active_tab = { bg_color = "#313244", fg_color = "#ECEFF4" },
 	}
 end
 
