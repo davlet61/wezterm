@@ -189,7 +189,7 @@ wezterm.on("update-right-status", function(window, pane)
 			hostname = wezterm.hostname()
 		end
 
-		table.insert(cells, wezterm.nerdfonts.cod_folder_opened .. " " .. cwd)
+		table.insert(cells, wezterm.nerdfonts.custom_folder_open .. " " .. cwd)
 	end
 
 	local date = wezterm.strftime("%a %b %-d")
