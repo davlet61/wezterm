@@ -57,8 +57,7 @@ end
 
 local function get_icon(title)
 	-- List of prefixes to try
-	local prefixes = { "dev", "md", "fa" } -- Add more prefixes as needed
-
+	local prefixes = { "dev", "md", "md_language", "md_code", "fa" } -- Add more prefixes as needed
 	-- Treat these titles as equivalent to "node"
 	local node_specific_titles = { "node", "nodejs", "bun", "npm", "yarn", "pnpm" }
 
@@ -70,12 +69,20 @@ local function get_icon(title)
 		end
 	end
 
-	-- Try to find an icon with the normalized title
+	-- Try to find an icon with the normalized title or title+js
 	for _, prefix in ipairs(prefixes) do
+		-- Try original title
 		local key = prefix .. "_" .. title
 		local icon = wezterm.nerdfonts[key]
 		if icon then
-			return icon -- Return the icon if found
+			return icon
+		end
+
+		-- Try with 'js' suffix
+		key = prefix .. "_" .. title .. "js"
+		icon = wezterm.nerdfonts[key]
+		if icon then
+			return icon
 		end
 	end
 
@@ -105,7 +112,7 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 
 	-- Get the icon or title
 	local title = get_icon(pane.title)
-
+	wezterm.log_info("pane => ", pane.title)
 	-- Simplify path and build the title
 	-- local simplified_path = url and simplify_path(url.path or "") or ""
 	-- local title = string.format("%s  %s", display_title, simplified_path)
