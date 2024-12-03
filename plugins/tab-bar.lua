@@ -104,12 +104,12 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	local fg_color = active and "#ECEFF4" or "#666666"
 
 	-- Get the icon or title
-	local display_title = get_icon(pane.title)
+	local title = get_icon(pane.title)
 
 	-- Simplify path and build the title
 	-- local simplified_path = url and simplify_path(url.path or "") or ""
 	-- local title = string.format("%s  %s", display_title, simplified_path)
-	local title = string.format("%s", display_title)
+	-- local title = string.format("%s", display_title)
 
 	-- Check if the title overlaps with the path
 	-- if string.find(cwd or "", pane.title:gsub("%.%.+", ""), 1, true) or simplified_path == pane.title then
