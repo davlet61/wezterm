@@ -109,7 +109,8 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 
 	-- Simplify path and build the title
 	local simplified_path = url and simplify_path(url.path or "") or ""
-	local title = string.format("%s  %s", display_title, simplified_path)
+	-- local title = string.format("%s  %s", display_title, simplified_path)
+	local title = string.format("%s", display_title)
 
 	-- Check if the title overlaps with the path
 	if string.find(cwd or "", pane.title:gsub("%.%.+", ""), 1, true) or simplified_path == pane.title then
@@ -154,6 +155,100 @@ wezterm.on("update-status", function(window, _)
 			{ Text = " " .. time .. " " },
 		}))
 	end
+end)
+
+wezterm.on("update-right-status", function(window, pane)
+	local cells = {}
+	local div = dividers[config.dividers] or dividers.slant_right
+
+	-- Handle CWD and hostname
+	local cwd_uri = pane:get_current_working_dir()
+	if cwd_uri then
+		local cwd = ""
+		local hostname = ""
+
+		if type(cwd_uri) == "userdata" then
+			cwd = cwd_uri.file_path
+			hostname = cwd_uri.host or wezterm.hostname()
+		else
+			cwd_uri = cwd_uri:sub(8)
+			local slash = cwd_uri:find("/")
+			if slash then
+				hostname = cwd_uri:sub(1, slash - 1)
+				cwd = cwd_uri:sub(slash):gsub("%%(%x%x)", function(hex)
+					return string.char(tonumber(hex, 16))
+				end)
+			end
+		end
+
+		-- Simplify hostname
+		local dot = hostname:find("[.]")
+		if dot then
+			hostname = hostname:sub(1, dot - 1)
+		end
+		if hostname == "" then
+			hostname = wezterm.hostname()
+		end
+
+		table.insert(cells, wezterm.nerdfonts.cod_folder_opened .. " " .. cwd)
+	end
+
+	-- Add date and time
+	local date = wezterm.strftime("%a %b %-d")
+	table.insert(cells, date)
+
+	-- Add battery info
+	local battery_cells = {}
+	for _, b in ipairs(wezterm.battery_info()) do
+		local charge = math.floor(b.state_of_charge * 100)
+		local battery_icon
+		if charge == 100 then
+			battery_icon = wezterm.nerdfonts.md_battery
+		else
+			local icon_level = math.floor(charge / 10) * 10
+			icon_level = math.max(10, math.min(100, icon_level))
+			battery_icon = wezterm.nerdfonts["md_battery_" .. icon_level]
+		end
+		table.insert(battery_cells, battery_icon .. " " .. string.format("%.0f%%", charge))
+	end
+
+	local colors = {
+		"#2B6184", -- Dark Blue
+		"#4690B9", -- Medium Dark Blue
+		"#61AFEF", -- Base Blue (#61AFEF)
+		"#98C379", -- Green
+	}
+
+	local text_fg = "#c0c0c0"
+	local battery_fg = "#282828" -- Lighter black for battery text
+	local battery_bg = "#98C379" -- Green background for battery section
+	local elements = {}
+	local num_cells = 0
+
+	local push = function(text, is_last, fg_color, bg_color)
+		local cell_no = num_cells + 1
+		fg_color = fg_color or text_fg
+		bg_color = bg_color or colors[cell_no]
+		table.insert(elements, { Foreground = { Color = fg_color } })
+		table.insert(elements, { Background = { Color = bg_color } })
+		table.insert(elements, { Text = " " .. text .. " " })
+		if not is_last then
+			table.insert(elements, { Foreground = { Color = colors[cell_no + 1] or bg_color } })
+			table.insert(elements, { Text = div.left })
+		end
+		num_cells = num_cells + 1
+	end
+
+	while #cells > 0 do
+		local cell = table.remove(cells, 1)
+		push(cell, #cells == 0)
+	end
+
+	for i, battery_cell in ipairs(battery_cells) do
+		push(battery_cell, i == #battery_cells, battery_fg, battery_bg)
+	end
+
+	window:set_right_status(wezterm.format(elements))
 end)
 
 function tab_bar.apply_to_config(c, opts)
