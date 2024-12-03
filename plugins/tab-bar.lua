@@ -101,7 +101,8 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	-- Determine the colors
 	local color_index = (tab.tab_index % #rainbow_colors) + 1
 	local bg_color = active and rainbow_colors[color_index] or "#313244"
-	local fg_color = active and "#313444" or "#666666"
+	-- local fg_color = active and "#313444" or "#666666"
+	local fg_color = active and "#ECEFF4" or "#666666"
 
 	-- Get the icon or title
 	local display_title = get_icon_or_title(pane.title)
