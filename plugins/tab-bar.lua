@@ -55,7 +55,7 @@ local function simplify_path(path)
 	return path:gsub("^" .. wezterm.home_dir, "~")
 end
 
-local function get_icon_or_title(title)
+local function get_icon(title)
 	-- List of prefixes to try
 	local prefixes = { "dev", "md", "fa" } -- Add more prefixes as needed
 
@@ -79,8 +79,7 @@ local function get_icon_or_title(title)
 		end
 	end
 
-	-- If no icon is found, return the original title
-	return title
+	return wezterm.nerdfonts.cod_terminal_ubuntu
 end
 
 wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
@@ -105,17 +104,17 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	local fg_color = active and "#ECEFF4" or "#666666"
 
 	-- Get the icon or title
-	local display_title = get_icon_or_title(pane.title)
+	local display_title = get_icon(pane.title)
 
 	-- Simplify path and build the title
-	local simplified_path = url and simplify_path(url.path or "") or ""
+	-- local simplified_path = url and simplify_path(url.path or "") or ""
 	-- local title = string.format("%s  %s", display_title, simplified_path)
 	local title = string.format("%s", display_title)
 
 	-- Check if the title overlaps with the path
-	if string.find(cwd or "", pane.title:gsub("%.%.+", ""), 1, true) or simplified_path == pane.title then
-		title = pane.title -- Show only the pane title
-	end
+	-- if string.find(cwd or "", pane.title:gsub("%.%.+", ""), 1, true) or simplified_path == pane.title then
+	-- 	title = pane.title -- Show only the pane title
+	-- end
 
 	-- Truncate the title if it exceeds max width
 	if #title > max_width then
@@ -198,7 +197,6 @@ wezterm.on("update-right-status", function(window, pane)
 	table.insert(cells, date)
 
 	-- Add battery info
-	local battery_cells = {}
 	for _, b in ipairs(wezterm.battery_info()) do
 		local charge = math.floor(b.state_of_charge * 100)
 		local battery_icon
@@ -209,43 +207,39 @@ wezterm.on("update-right-status", function(window, pane)
 			icon_level = math.max(10, math.min(100, icon_level))
 			battery_icon = wezterm.nerdfonts["md_battery_" .. icon_level]
 		end
-		table.insert(battery_cells, battery_icon .. " " .. string.format("%.0f%%", charge))
+		table.insert(cells, battery_icon .. " " .. string.format("%.0f%%", charge))
 	end
 
 	local colors = {
-		"#2B6184", -- Dark Blue
-		"#4690B9", -- Medium Dark Blue
-		"#61AFEF", -- Base Blue (#61AFEF)
+		"#61AFEF", -- Blue
+		"#E5C07B", -- Yellow
 		"#98C379", -- Green
 	}
 
-	local text_fg = "#c0c0c0"
-	local battery_fg = "#282828" -- Lighter black for battery text
-	local battery_bg = "#98C379" -- Green background for battery section
+	local text_fg = "#333333"
 	local elements = {}
 	local num_cells = 0
-
-	local push = function(text, is_last, fg_color, bg_color)
+	local function push(text, is_last)
 		local cell_no = num_cells + 1
-		fg_color = fg_color or text_fg
-		bg_color = bg_color or colors[cell_no]
-		table.insert(elements, { Foreground = { Color = fg_color } })
-		table.insert(elements, { Background = { Color = bg_color } })
+
+		-- Use white text for first cell, default text_fg for others
+		local current_fg = (cell_no == 1) and "#ECEFF4" or text_fg
+
+		table.insert(elements, { Foreground = { Color = current_fg } })
+		table.insert(elements, { Background = { Color = colors[cell_no] } })
 		table.insert(elements, { Text = " " .. text .. " " })
+
 		if not is_last then
-			table.insert(elements, { Foreground = { Color = colors[cell_no + 1] or bg_color } })
+			table.insert(elements, { Foreground = { Color = colors[cell_no + 1] } })
 			table.insert(elements, { Text = div.left })
 		end
+
 		num_cells = num_cells + 1
 	end
 
 	while #cells > 0 do
 		local cell = table.remove(cells, 1)
 		push(cell, #cells == 0)
-	end
-
-	for i, battery_cell in ipairs(battery_cells) do
-		push(battery_cell, i == #battery_cells, battery_fg, battery_bg)
 	end
 
 	window:set_right_status(wezterm.format(elements))
