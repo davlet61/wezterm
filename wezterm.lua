@@ -100,9 +100,68 @@ config.tab_bar_at_bottom = true
 config.use_fancy_tab_bar = false
 config.window_padding = { left = 10, right = 10, top = 10, bottom = 10 }
 -- Maximize window on startup
+-- wezterm.on("gui-startup", function(cmd)
+-- 	local _, _, window = mux.spawn_window(cmd or {})
+-- 	window:gui_window():maximize()
+-- end)
+
+config.set_environment_variables = {
+	PYTHON_PATH = "/usr/lib/python3/dist-packages:" .. (os.getenv("PYTHON_PATH") or ""),
+	LD_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu:/usr/local/lib:" .. (os.getenv("LD_LIBRARY_PATH") or ""),
+}
+
 wezterm.on("gui-startup", function(cmd)
-	local tab, pane, window = mux.spawn_window(cmd or {})
+	local args = cmd and cmd.args or {}
+	local env_vars = {
+		PYTHON_PATH = "/usr/lib/python3/dist-packages:" .. (os.getenv("PYTHON_PATH") or ""),
+		LD_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu:/usr/local/lib:" .. (os.getenv("LD_LIBRARY_PATH") or ""),
+	}
+
+	local _, papi, window = mux.spawn_window({
+		workspace = "pvt",
+		set_environment_variables = env_vars,
+	})
+
 	window:gui_window():maximize()
+
+	if args[1] == "pvt" then
+		papi:send_text("papi\n")
+		papi:send_text("clear\n")
+
+		local pweb = papi:split({
+			direction = "Right",
+			size = 0.5,
+			cwd = wezterm.home_dir .. "/pvt-frontend",
+			set_environment_variables = env_vars,
+		})
+
+		local papi_listener = papi:split({
+			direction = "Bottom",
+			size = 0.5,
+		})
+		papi_listener:send_text("putils\n")
+		papi_listener:send_text("clear\n")
+
+		local putils = pweb:split({
+			direction = "Bottom",
+			size = 0.5,
+			set_environment_variables = env_vars,
+		})
+		putils:send_text("putils\n")
+		putils:send_text("clear\n")
+
+		if args[2] == "run" then
+			papi:send_text("flask run\n")
+			papi_listener:send_text("flask run_listener\n")
+			pweb:send_text("pnpm dev\n")
+			putils:send_text("python cloud_worker.py\n")
+			-- else
+			-- 	papi:send_text("flask run\n")
+			-- 	papi_listener:send_text("flask run_listener\n")
+			-- 	pweb:send_text("pnpm dev\n")
+			-- 	putils:send_text("python cloud_worker.py\n")
+		end
+	end
 end)
 
 -- Import tab-bar module
@@ -122,5 +181,9 @@ config.inactive_pane_hsb = {
 	-- hue = 0.9,
 	brightness = 0.4,
 }
+
+config.initial_rows = 40 -- Adjust rows to make it fit maximized
+config.initial_cols = 120
+-- config.enable_wayland = false
 
 return config
