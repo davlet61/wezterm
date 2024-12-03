@@ -98,7 +98,7 @@ config.hide_tab_bar_if_only_one_tab = true
 config.enable_tab_bar = true
 config.tab_bar_at_bottom = true
 config.use_fancy_tab_bar = false
-config.window_padding = { left = 10, right = 10, top = 10, bottom = 10 }
+config.window_padding = { left = 0, right = 0, top = 0, bottom = 5 }
 -- Maximize window on startup
 -- wezterm.on("gui-startup", function(cmd)
 -- 	local _, _, window = mux.spawn_window(cmd or {})
@@ -184,6 +184,5 @@ config.inactive_pane_hsb = {
 
 config.initial_rows = 40 -- Adjust rows to make it fit maximized
 config.initial_cols = 120
--- config.enable_wayland = false
 
 return config
