@@ -160,12 +160,14 @@ wezterm.on("update-right-status", function(window, pane)
 	local cells = {}
 	local div = dividers[config.dividers] or dividers.slant_right
 
+	-- Add initial slant cell
+	table.insert(cells, wezterm.nerdfonts.cod_folder_opened)
+
 	-- Handle CWD and hostname
 	local cwd_uri = pane:get_current_working_dir()
 	if cwd_uri then
 		local cwd = ""
 		local hostname = ""
-
 		if type(cwd_uri) == "userdata" then
 			cwd = cwd_uri.file_path
 			hostname = cwd_uri.host or wezterm.hostname()
@@ -179,8 +181,6 @@ wezterm.on("update-right-status", function(window, pane)
 				end)
 			end
 		end
-
-		-- Simplify hostname
 		local dot = hostname:find("[.]")
 		if dot then
 			hostname = hostname:sub(1, dot - 1)
@@ -192,11 +192,9 @@ wezterm.on("update-right-status", function(window, pane)
 		table.insert(cells, wezterm.nerdfonts.cod_folder_opened .. " " .. cwd)
 	end
 
-	-- Add date and time
 	local date = wezterm.strftime("%a %b %-d")
 	table.insert(cells, date)
 
-	-- Add battery info
 	for _, b in ipairs(wezterm.battery_info()) do
 		local charge = math.floor(b.state_of_charge * 100)
 		local battery_icon
@@ -211,6 +209,7 @@ wezterm.on("update-right-status", function(window, pane)
 	end
 
 	local colors = {
+		"#282C34", -- Background color for initial slant
 		"#61AFEF", -- Blue
 		"#E5C07B", -- Yellow
 		"#98C379", -- Green
@@ -219,21 +218,26 @@ wezterm.on("update-right-status", function(window, pane)
 	local text_fg = "#333333"
 	local elements = {}
 	local num_cells = 0
+
 	local function push(text, is_last)
 		local cell_no = num_cells + 1
-
-		-- Use white text for first cell, default text_fg for others
-		local current_fg = (cell_no == 1) and "#ECEFF4" or text_fg
-
-		table.insert(elements, { Foreground = { Color = current_fg } })
-		table.insert(elements, { Background = { Color = colors[cell_no] } })
-		table.insert(elements, { Text = " " .. text .. " " })
-
-		if not is_last then
-			table.insert(elements, { Foreground = { Color = colors[cell_no + 1] } })
-			table.insert(elements, { Text = div.left })
+		if cell_no == 1 then
+			-- First cell (empty) just needs the slant
+			table.insert(elements, { Foreground = { Color = "#1b1b1b" } })
+			table.insert(elements, { Background = { Color = colors[2] } })
+			table.insert(elements, { Text = div.right })
+		else
+			-- For all other cells
+			local current_fg = (cell_no == 2) and "#ECEFF4" or text_fg
+			table.insert(elements, { Foreground = { Color = current_fg } })
+			table.insert(elements, { Background = { Color = colors[cell_no] } })
+			table.insert(elements, { Text = " " .. text .. " " })
+			if not is_last then
+				table.insert(elements, { Foreground = { Color = colors[cell_no] } })
+				table.insert(elements, { Background = { Color = colors[cell_no + 1] } })
+				table.insert(elements, { Text = div.right })
+			end
 		end
-
 		num_cells = num_cells + 1
 	end
 
