@@ -118,7 +118,7 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 
 	-- Truncate the title if it exceeds max width
 	if #title > max_width then
-		title = wezterm.truncate_right(title, max_width - 2) .. "…"
+		title = wezterm.truncate_right(title, max_width - 5) .. "…"
 	end
 
 	local elements = {}
