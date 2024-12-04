@@ -67,6 +67,12 @@ local function get_icon(title)
 	if title == "neo-tree" then
 		title = "file_tree"
 	end
+	if title == "toggleterm" then
+		title = "terminal"
+	end
+	if title == "snacks_terminal" then
+		title = "git"
+	end
 	-- Normalize titles to "node" for node-specific terms
 	for _, node_title in ipairs(node_specific_titles) do
 		if title == node_title then
@@ -202,28 +208,26 @@ wezterm.on("update-right-status", function(window, pane)
 			hostname = wezterm.hostname()
 		end
 
-		table.insert(cells, wezterm.nerdfonts.custom_folder_open .. " " .. cwd)
+		table.insert(cells, wezterm.nerdfonts.custom_folder_open .. " " .. simplify_path(cwd))
 	end
 
-	local date = wezterm.strftime("%a %b %-d")
+	local date = wezterm.strftime("%a %b %-d, %H:%M")
 	table.insert(cells, date)
 
 	for _, b in ipairs(wezterm.battery_info()) do
 		local charge = math.floor(b.state_of_charge * 100)
+		local is_charging = b.state == "Charging"
 		local battery_icon
 
 		if charge == 100 then
-			battery_icon = wezterm.nerdfonts.md_battery
+			battery_icon = wezterm.nerdfonts[is_charging and "md_battery_charging_100" or "md_battery"]
 		else
-			local icon_level = math.floor(charge / 10) * 10
-			icon_level = math.max(10, math.min(100, icon_level))
-			local icon_name = "md_battery_"
-			if b.state == "Charging" then
-				icon_name = icon_name .. "charging_"
-			end
+			local icon_name = is_charging and "md_battery_charging" or "md_battery"
+			local icon_level = math.min(100, math.max(10, math.floor(charge / 10) * 10))
 			battery_icon = wezterm.nerdfonts[icon_name .. icon_level]
 		end
-		table.insert(cells, battery_icon .. " " .. string.format("%.0f%%", charge))
+
+		table.insert(cells, battery_icon .. " " .. charge .. "%")
 	end
 
 	local colors = {
