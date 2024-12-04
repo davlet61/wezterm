@@ -57,10 +57,16 @@ end
 
 local function get_icon(title)
 	-- List of prefixes to try
-	local prefixes = { "dev", "md", "md_language", "md_code", "fa" } -- Add more prefixes as needed
+	local prefixes = { "md", "md_language", "md_code", "dev", "fa" } -- Add more prefixes as needed
 	-- Treat these titles as equivalent to "node"
 	local node_specific_titles = { "node", "nodejs", "bun", "npm", "yarn", "pnpm" }
 
+	if title == "dockerfile" then
+		title = "docker"
+	end
+	if title == "neo-tree" then
+		title = "file_tree"
+	end
 	-- Normalize titles to "node" for node-specific terms
 	for _, node_title in ipairs(node_specific_titles) do
 		if title == node_title then
@@ -112,7 +118,7 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 
 	-- Get the icon or title
 	local title = get_icon(pane.title)
-	wezterm.log_info("pane => ", pane.title)
+	-- wezterm.log_info("pane => ", pane.title)
 	-- Simplify path and build the title
 	-- local simplified_path = url and simplify_path(url.path or "") or ""
 	-- local title = string.format("%s  %s", display_title, simplified_path)
@@ -205,12 +211,17 @@ wezterm.on("update-right-status", function(window, pane)
 	for _, b in ipairs(wezterm.battery_info()) do
 		local charge = math.floor(b.state_of_charge * 100)
 		local battery_icon
+
 		if charge == 100 then
 			battery_icon = wezterm.nerdfonts.md_battery
 		else
 			local icon_level = math.floor(charge / 10) * 10
 			icon_level = math.max(10, math.min(100, icon_level))
-			battery_icon = wezterm.nerdfonts["md_battery_" .. icon_level]
+			local icon_name = "md_battery_"
+			if b.state == "Charging" then
+				icon_name = icon_name .. "charging_"
+			end
+			battery_icon = wezterm.nerdfonts[icon_name .. icon_level]
 		end
 		table.insert(cells, battery_icon .. " " .. string.format("%.0f%%", charge))
 	end
