@@ -139,9 +139,9 @@ wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
 	-- end
 
 	-- Truncate the title if it exceeds max width
-	if #title > max_width then
-		title = wezterm.truncate_right(title, max_width - 5) .. "…"
-	end
+	-- if #title > max_width then
+	-- 	title = wezterm.truncate_right(title, max_width - 5) .. "…"
+	-- end
 
 	local elements = {}
 
@@ -224,7 +224,7 @@ wezterm.on("update-right-status", function(window, pane)
 		if charge == 100 then
 			-- battery_icon = wezterm.nerdfonts.md_battery
 			battery_icon =
-				wezterm.nerdfonts[b.state == "Unknown" or b.state == "Full" and "md_battery_charging_100" or "md_battery"]
+				wezterm.nerdfonts[(b.state == "Unknown" or b.state == "Full") and "md_battery_charging_100" or "md_battery"]
 		else
 			local icon_level = math.floor(charge / 10) * 10
 			icon_level = math.max(10, math.min(100, icon_level))
