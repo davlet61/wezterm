@@ -216,18 +216,19 @@ wezterm.on("update-right-status", function(window, pane)
 
 	for _, b in ipairs(wezterm.battery_info()) do
 		local charge = math.floor(b.state_of_charge * 100)
-		local is_charging = b.state == "Charging"
 		local battery_icon
 
 		if charge == 100 then
-			battery_icon = wezterm.nerdfonts[is_charging and "md_battery_charging_100" or "md_battery"]
+			-- battery_icon = wezterm.nerdfonts.md_battery
+			battery_icon =
+				wezterm.nerdfonts[b.state == "Unknown" or b.state == "Full" and "md_battery_charging_100" or "md_battery"]
 		else
-			local icon_name = is_charging and "md_battery_charging" or "md_battery"
-			local icon_level = math.min(100, math.max(10, math.floor(charge / 10) * 10))
+			local icon_level = math.floor(charge / 10) * 10
+			icon_level = math.max(10, math.min(100, icon_level))
+			local icon_name = b.state == "Charging" and "md_battery_charging_" or "md_battery_"
 			battery_icon = wezterm.nerdfonts[icon_name .. icon_level]
 		end
-
-		table.insert(cells, battery_icon .. " " .. charge .. "%")
+		table.insert(cells, battery_icon .. " " .. string.format("%.0f%%", charge))
 	end
 
 	local colors = {
