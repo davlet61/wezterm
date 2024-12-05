@@ -73,6 +73,9 @@ local function get_icon(title)
 	if title == "snacks_terminal" then
 		title = "git"
 	end
+	if title == "TelescopeResults" then
+		title = "search"
+	end
 	-- Normalize titles to "node" for node-specific terms
 	for _, node_title in ipairs(node_specific_titles) do
 		if title == node_title then
