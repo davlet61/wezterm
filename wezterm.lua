@@ -1,37 +1,14 @@
 local wezterm = require("wezterm")
+local utils = require("plugins.utilities")
+
 local mux = wezterm.mux
 local act = wezterm.action
 local config = {}
 if wezterm.config_builder then
 	config = wezterm.config_builder()
 end
--- Determine if we're running on macOS
-local function is_macos()
-	return wezterm.target_triple:find("darwin") ~= nil
-end
 
--- Get the appropriate modifier key based on OS
-local function get_mod(mod)
-	if mod == "SUPER" then
-		return is_macos() and "CMD" or "CTRL"
-	end
-	return mod
-end
-
--- Helper function to create keybindings with dynamic modifiers
-local function key_bind(key, mods, action)
-	local dynamic_mods = {}
-	for mod in mods:gmatch("[^|]+") do
-		table.insert(dynamic_mods, get_mod(mod))
-	end
-	return {
-		key = key,
-		mods = table.concat(dynamic_mods, "|"),
-		action = action,
-	}
-end
-
-if is_macos() then
+if utils.is_macos() then
 	config.font_size = 16.0
 	config.window_decorations = "RESIZE"
 end
@@ -57,15 +34,15 @@ config.keys = {
 	{ key = "l", mods = "CMD", action = act.ActivatePaneDirection("Right") },
 
 	-- Dynamic modifiers (these changed between OS)
-	key_bind("Enter", "SUPER", act.ActivateCopyMode),
-	key_bind("+", "SUPER", act.IncreaseFontSize),
-	key_bind("-", "SUPER", act.DecreaseFontSize),
-	key_bind("0", "SUPER", act.ResetFontSize),
-	key_bind("v", "SUPER", act.PasteFrom("Clipboard")),
-	key_bind("LeftArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Left")),
-	key_bind("RightArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Right")),
-	key_bind("UpArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Up")),
-	key_bind("DownArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Down")),
+	utils.key_bind("Enter", "SUPER", act.ActivateCopyMode),
+	utils.key_bind("+", "SUPER", act.IncreaseFontSize),
+	utils.key_bind("-", "SUPER", act.DecreaseFontSize),
+	utils.key_bind("0", "SUPER", act.ResetFontSize),
+	utils.key_bind("v", "SUPER", act.PasteFrom("Clipboard")),
+	utils.key_bind("LeftArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Left")),
+	utils.key_bind("RightArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Right")),
+	utils.key_bind("UpArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Up")),
+	utils.key_bind("DownArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Down")),
 
 	-- Keep consistent across OS
 	{ key = "C", mods = "SHIFT|CTRL", action = act.CopyTo("Clipboard") },
@@ -83,7 +60,7 @@ config.keys = {
 	{ key = "+", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 	{
 		key = "t",
-		mods = is_macos() and "CMD" or "LEADER",
+		mods = utils.is_macos() and "CMD" or "LEADER",
 		action = wezterm.action.SpawnCommandInNewTab({ cwd = "~" }),
 	},
 	{ key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = false }) },

@@ -84,4 +84,30 @@ H._constant_width = function(prev, next)
 	return H._space(next, first_half, second_half)
 end
 
+-- Determine if we're running on macOS
+H.is_macos = function()
+	return wez.target_triple:find("darwin") ~= nil
+end
+
+-- Get the appropriate modifier key based on OS
+H.get_mod = function(mod)
+	if mod == "SUPER" then
+		return H.is_macos() and "CMD" or "CTRL"
+	end
+	return mod
+end
+
+-- Helper function to create keybindings with dynamic modifiers
+H.key_bind = function(key, mods, action)
+	local dynamic_mods = {}
+	for mod in mods:gmatch("[^|]+") do
+		table.insert(dynamic_mods, H.get_mod(mod))
+	end
+	return {
+		key = key,
+		mods = table.concat(dynamic_mods, "|"),
+		action = action,
+	}
+end
+
 return H

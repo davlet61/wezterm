@@ -1,4 +1,6 @@
 local wezterm = require("wezterm")
+local utils = require("plugins.utilities")
+
 local tab_bar = {}
 
 local dividers = {
@@ -101,7 +103,8 @@ local function get_icon(title)
 		end
 	end
 
-	return wezterm.nerdfonts.cod_terminal_ubuntu
+	local default_icon = utils.is_macos() and wezterm.nerdfonts.dev_apple or wezterm.nerdfonts.cod_terminal_ubuntu
+	return default_icon
 end
 
 wezterm.on("format-tab-title", function(tab, tabs, _, _, _, max_width)
@@ -216,12 +219,12 @@ wezterm.on("update-right-status", function(window, pane)
 	end
 
 	-- Music section
-	local music = ytmusic.get_currently_playing(40, 1)
-	if music and music ~= "" then
-		local status = ytmusic.get_play_status()
-		local play_pause_icon = status == "Playing" and "▶" or "⏸"
-		table.insert(cells, play_pause_icon .. " " .. music)
-	end
+	-- local music = ytmusic.get_currently_playing(40, 1)
+	-- if music and music ~= "" then
+	-- 	local status = ytmusic.get_play_status()
+	-- 	local play_pause_icon = status == "Playing" and "▶" or "⏸"
+	-- 	table.insert(cells, play_pause_icon .. " " .. music)
+	-- end
 
 	-- Date section
 	local date = wezterm.strftime("%a %b %-d, %H:%M")
@@ -247,7 +250,7 @@ wezterm.on("update-right-status", function(window, pane)
 	local colors = {
 		"#282C34", -- Background color for initial slant
 		"#61AFEF", -- Blue
-		"#C678DD", -- Purple (for music)
+		-- "#C678DD", -- Purple (for music)
 		"#E5C07B", -- Yellow
 		"#98C379", -- Green
 	}
