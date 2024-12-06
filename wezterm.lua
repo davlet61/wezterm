@@ -45,62 +45,51 @@ config.scrollback_lines = 5000
 config.disable_default_key_bindings = true
 config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 1000 }
 config.keys = {
-	-- Application control
-	key_bind("q", "SUPER", act.QuitApplication),
-	key_bind("R", "SHIFT|SUPER", act.ReloadConfiguration),
+	-- Keep CMD for both OS
+	{ key = "q", mods = "CMD", action = act.QuitApplication },
+	{ key = "l", mods = "CMD|SHIFT", action = act.ActivateTabRelative(1) },
+	{ key = "h", mods = "CMD|SHIFT", action = act.ActivateTabRelative(-1) },
+	{ key = "y", mods = "CMD", action = act.SpawnTab("CurrentPaneDomain") },
+	{ key = "w", mods = "CMD", action = act.CloseCurrentTab({ confirm = false }) },
+	{ key = "j", mods = "CMD", action = act.ActivatePaneDirection("Down") },
+	{ key = "k", mods = "CMD", action = act.ActivatePaneDirection("Up") },
+	{ key = "h", mods = "CMD", action = act.ActivatePaneDirection("Left") },
+	{ key = "l", mods = "CMD", action = act.ActivatePaneDirection("Right") },
 
-	-- Tab navigation
-	key_bind("l", "SUPER|SHIFT", act.ActivateTabRelative(1)),
-	key_bind("h", "SUPER|SHIFT", act.ActivateTabRelative(-1)),
-	key_bind("PageUp", "CTRL", act.ActivateTabRelative(-1)),
-	key_bind("PageDown", "CTRL", act.ActivateTabRelative(1)),
-
-	-- Tab management
-	key_bind("y", "SUPER", act.SpawnTab("CurrentPaneDomain")),
-	key_bind("w", "SUPER", act.CloseCurrentTab({ confirm = false })),
-	{
-		key = "t",
-		mods = is_macos() and "CMD" or "LEADER",
-		action = wezterm.action.SpawnCommandInNewTab({ cwd = "~" }),
-	},
-
-	-- Copy mode and clipboard
+	-- Dynamic modifiers (these changed between OS)
 	key_bind("Enter", "SUPER", act.ActivateCopyMode),
-	{ key = "C", mods = "SHIFT|CTRL", action = act.CopyTo("Clipboard") },
-	-- Keep both clipboard paste options for compatibility
-	{ key = "v", mods = "SHIFT|CTRL", action = act.PasteFrom("Clipboard") },
-	key_bind("v", "SUPER", act.PasteFrom("Clipboard")),
-
-	-- Font size (keep both CTRL and SUPER/CMD versions)
-	{ key = "+", mods = "CTRL", action = act.IncreaseFontSize },
-	{ key = "-", mods = "CTRL", action = act.DecreaseFontSize },
-	{ key = "0", mods = "CTRL", action = act.ResetFontSize },
 	key_bind("+", "SUPER", act.IncreaseFontSize),
 	key_bind("-", "SUPER", act.DecreaseFontSize),
 	key_bind("0", "SUPER", act.ResetFontSize),
+	key_bind("v", "SUPER", act.PasteFrom("Clipboard")),
+	key_bind("LeftArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Left")),
+	key_bind("RightArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Right")),
+	key_bind("UpArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Up")),
+	key_bind("DownArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Down")),
 
-	-- Window management
+	-- Keep consistent across OS
+	{ key = "C", mods = "SHIFT|CTRL", action = act.CopyTo("Clipboard") },
 	{ key = "N", mods = "SHIFT|CTRL", action = act.SpawnWindow },
 	{
 		key = "U",
 		mods = "SHIFT|CTRL",
 		action = act.CharSelect({ copy_on_select = true, copy_to = "ClipboardAndPrimarySelection" }),
 	},
+	{ key = "PageUp", mods = "CTRL", action = act.ActivateTabRelative(-1) },
+	{ key = "PageDown", mods = "CTRL", action = act.ActivateTabRelative(1) },
 
-	-- Pane navigation
-	key_bind("LeftArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Left")),
-	key_bind("RightArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Right")),
-	key_bind("UpArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Up")),
-	key_bind("DownArrow", "SHIFT|SUPER", act.ActivatePaneDirection("Down")),
-	key_bind("h", "SUPER", act.ActivatePaneDirection("Left")),
-	key_bind("j", "SUPER", act.ActivatePaneDirection("Down")),
-	key_bind("k", "SUPER", act.ActivatePaneDirection("Up")),
-	key_bind("l", "SUPER", act.ActivatePaneDirection("Right")),
-
-	-- Pane management
+	-- Leader based keys (same for both OS)
 	{ key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "+", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{
+		key = "t",
+		mods = is_macos() and "CMD" or "LEADER",
+		action = wezterm.action.SpawnCommandInNewTab({ cwd = "~" }),
+	},
 	{ key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = false }) },
+	{ key = "b", mods = "LEADER|CTRL", action = act.SendString("\x02") },
+	{ key = "Enter", mods = "LEADER", action = act.ActivateCopyMode },
+	{ key = "p", mods = "LEADER", action = act.PasteFrom("PrimarySelection") },
 	{ key = "m", mods = "LEADER", action = wezterm.action.TogglePaneZoomState },
 	{ key = "Space", mods = "LEADER", action = wezterm.action.RotatePanes("Clockwise") },
 	{
@@ -109,10 +98,7 @@ config.keys = {
 		action = wezterm.action.PaneSelect({ mode = "SwapWithActive" }),
 	},
 
-	-- Other functionality
-	{ key = "b", mods = "LEADER|CTRL", action = act.SendString("\x02") },
-	{ key = "Enter", mods = "LEADER", action = act.ActivateCopyMode },
-	{ key = "p", mods = "LEADER", action = act.PasteFrom("PrimarySelection") },
+	-- Additional keys (same for both OS)
 	{ key = "<", mods = "ALT", action = act.MoveTabRelative(-1) },
 	{ key = ">", mods = "SHIFT|ALT", action = act.MoveTabRelative(1) },
 	{
@@ -125,7 +111,7 @@ config.keys = {
 	},
 	{ key = "r", mods = "LEADER", action = act.ActivateKeyTable({ name = "resize_pane", one_shot = false }) },
 
-	-- Tab renaming (keep both variants)
+	-- Tab renaming
 	{
 		key = "R",
 		mods = "CTRL|SHIFT",
