@@ -179,13 +179,14 @@ wezterm.on("update-status", function(window, _)
 end)
 
 wezterm.on("update-right-status", function(window, pane)
+	local ytmusic = require("plugins.music-player")
 	local cells = {}
 	local div = dividers[config.dividers] or dividers.slant_right
 
 	-- Add initial slant cell
 	table.insert(cells, wezterm.nerdfonts.cod_folder_opened)
 
-	-- Handle CWD and hostname
+	-- CWD and hostname section
 	local cwd_uri = pane:get_current_working_dir()
 	if cwd_uri then
 		local cwd = ""
@@ -214,15 +215,24 @@ wezterm.on("update-right-status", function(window, pane)
 		table.insert(cells, wezterm.nerdfonts.custom_folder_open .. " " .. simplify_path(cwd))
 	end
 
+	-- Music section
+	local music = ytmusic.get_currently_playing(40, 1)
+	if music and music ~= "" then
+		local status = ytmusic.get_play_status()
+		local play_pause_icon = status == "Playing" and "▶" or "⏸"
+		table.insert(cells, play_pause_icon .. " " .. music)
+	end
+
+	-- Date section
 	local date = wezterm.strftime("%a %b %-d, %H:%M")
 	table.insert(cells, date)
 
+	-- Battery section
 	for _, b in ipairs(wezterm.battery_info()) do
 		local charge = math.floor(b.state_of_charge * 100)
 		local battery_icon
 
 		if charge == 100 then
-			-- battery_icon = wezterm.nerdfonts.md_battery
 			battery_icon =
 				wezterm.nerdfonts[(b.state == "Unknown" or b.state == "Full") and "md_battery_charging_100" or "md_battery"]
 		else
@@ -237,6 +247,7 @@ wezterm.on("update-right-status", function(window, pane)
 	local colors = {
 		"#282C34", -- Background color for initial slant
 		"#61AFEF", -- Blue
+		"#C678DD", -- Purple (for music)
 		"#E5C07B", -- Yellow
 		"#98C379", -- Green
 	}
@@ -247,17 +258,17 @@ wezterm.on("update-right-status", function(window, pane)
 
 	local function push(text, is_last)
 		local cell_no = num_cells + 1
+
 		if cell_no == 1 then
-			-- First cell (empty) just needs the slant
 			table.insert(elements, { Foreground = { Color = "#1b1b1b" } })
 			table.insert(elements, { Background = { Color = colors[2] } })
 			table.insert(elements, { Text = div.right })
 		else
-			-- For all other cells
 			local current_fg = (cell_no == 2) and "#ECEFF4" or text_fg
 			table.insert(elements, { Foreground = { Color = current_fg } })
 			table.insert(elements, { Background = { Color = colors[cell_no] } })
 			table.insert(elements, { Text = " " .. text .. " " })
+
 			if not is_last then
 				table.insert(elements, { Foreground = { Color = colors[cell_no] } })
 				table.insert(elements, { Background = { Color = colors[cell_no + 1] } })
@@ -267,9 +278,8 @@ wezterm.on("update-right-status", function(window, pane)
 		num_cells = num_cells + 1
 	end
 
-	while #cells > 0 do
-		local cell = table.remove(cells, 1)
-		push(cell, #cells == 0)
+	for i, cell in ipairs(cells) do
+		push(cell, i == #cells)
 	end
 
 	window:set_right_status(wezterm.format(elements))
